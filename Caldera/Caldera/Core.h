@@ -1,0 +1,5 @@
+#if !defined(CALDERA_CORE_H_INCLUDED)
+#define CALDERA_CORE_H_INCLUDED 1
+
+
+#endif
