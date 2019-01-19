@@ -3,10 +3,8 @@
 
 void caInitApplication(void)
 {
-    CA_INFO(__FUNCTION__);
 }
 void caShutdownApplication(void)
 {
-    CA_INFO("test = %d", 12);
 }
 

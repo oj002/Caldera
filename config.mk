@@ -5,18 +5,15 @@ VERSION = 0.0.0
 #  Customize below to fit your system  #
 #======================================#
 
-# paths
-PREFIX = /usr/
-
-# includes and libs
-INCS = -I. -I/usr/include
-LIBS = -L/usr/lib -lm -lglfw
+# libs
+LIBS = -lm -lglfw
 
 # flags
-CFLAGS = -g
+CWARNGING = -Wall -Wextra -Wfloat-equal -Wundef -Wshadow -Wpointer-arith -Wcast-align -Wstrict-prototypes -Wstrict-overflow=5 -Wwrite-strings -Wcast-qual -Wswitch-default -Wswitch-enum -Wconversion -Wunreachable-code
+CFLAGS = -g $(CWARNINGS)
 CPPFLAGS = -DVERSION=\"$(VERSION)\"
-STCFLAGS = $(INCS) $(CPPFLAGS) $(CFLAGS)
+STCFLAGS = $(CPPFLAGS) $(CFLAGS)
 STLDFLAGS = $(LIBS) $(LDFLAGS)
 
 # compiler and linker
-CC = gcc
+CC = tcc

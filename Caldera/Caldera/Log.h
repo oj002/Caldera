@@ -1,6 +1,8 @@
 #if !defined(CALDERA_LOG_H_INCLUDED)
 #define CALDERA_LOG_H_INCLUDED 1
 
+#include "Core.h"
+
 #include <stdio.h>
 #include <time.h>
 #include <stdarg.h>
@@ -10,7 +12,7 @@
 #include <sys/time.h>
 #include <pthread.h>
 
-typedef enum CaLogLevel_t
+enum CaLogLevel
 {
     CA_LOG_LEV_VERBOSE = 0,
     CA_LOG_LEV_DEBUG = 1,
@@ -19,76 +21,77 @@ typedef enum CaLogLevel_t
     CA_LOG_LEV_ERR = 4,
     CA_LOG_LEV_FATAL = 5,
     CA_LOG_LEV_OFF = 6,
-} CaLogLevel_t;
-typedef struct CaLogRecord_t
+};
+struct CaLogRecord
 {
     char const *log_name;
-    CaLogLevel_t level;
+    enum CaLogLevel level;
 
     struct tm t;
-    unsigned long long nsec;
+    unsigned long long usec; /* micro */
     pid_t tid, pid;
     size_t line;
     char const *func;
     char const *file;
-} CaLogRecord_t;
+};
 
-typedef void(*CaLogPrintCallback_t)
-    (FILE *f, CaLogRecord_t const rec, char const *fmt, ...);
-
-typedef struct CaLogLogger_t
+struct CaLogLogger
 {
     char const *name;
-    CaLogLevel_t level;
-    CaLogPrintCallback_t print;
-} CaLogLogger_t;
+    enum CaLogLevel level;
+    void (*print)(
+            FILE *f, struct CaLogRecord const rec,
+            char const *fmt, va_list args);
+};
 
-CaLogRecord_t caLogRecord(CaLogLevel_t level, size_t line,
+struct CaLogRecord caCreateLogRecord(
+        enum CaLogLevel level, size_t line,
         char const * func, char const * file);
 
-void caLogLog(FILE *f, CaLogLogger_t const log, CaLogRecord_t rec,
-                char const *fmt, ...);
+void caLogLog(
+        FILE *f, struct CaLogLogger const log,
+        struct CaLogRecord rec, char const *fmt, ...);
 
-void caLogFuncDefault(FILE *f, CaLogRecord_t const rec, char const *fmt, ...);
+void caLogFuncDefault(
+        FILE *f, struct CaLogRecord const rec, char const *fmt, va_list args);
 
 void caLogInit(void);
 
-extern CaLogLogger_t caLogCore;
+extern struct CaLogLogger caLogCore;
 extern FILE *caLogCoreSink;
 
-extern CaLogLogger_t caLogApp;
+extern struct CaLogLogger caLogApp;
 extern FILE *caLogAppSink;
 
-#define CA_LOG_RECORD(level) \
-    caLogRecord(level, __LINE__, __FUNCTION__, __FILE__)
+#define caLogRecord(f, log, level, ...) \
+    caLogLog(f, log,\
+            caCreateLogRecord(level, __LINE__, __FUNCTION__, __FILE__), \
+            __VA_ARGS__)
 
-#define CA_LOG_LOG_(f, log, level, ...) \
-    caLogLog(f, log, CA_LOG_RECORD(level), __VA_ARGS__)
-
-#define CA_CORE_VERBOSE(...) CA_LOG_LOG_( \
+#define caCoreVerbose(...) caLogRecord( \
         caLogCoreSink, caLogCore, CA_LOG_LEV_VERBOSE, __VA_ARGS__)
-#define CA_CORE_DEBUG(...) CA_LOG_LOG_( \
+#define caCoreDebug(...) caLogRecord( \
         caLogCoreSink, caLogCore, CA_LOG_LEV_DEBUG, __VA_ARGS__)
-#define CA_CORE_INFO(...) CA_LOG_LOG_( \
+#define caCoreInfo(...) caLogRecord( \
         caLogCoreSink, caLogCore, CA_LOG_LEV_INFO, __VA_ARGS__)
-#define CA_CORE_WARN(...) CA_LOG_LOG_( \
+#define caCoreWarn(...) caLogRecord( \
         caLogCoreSink, caLogCore, CA_LOG_LEV_WARN, __VA_ARGS__)
-#define CA_CORE_ERR(...) CA_LOG_LOG_( \
+#define caCoreErr(...) caLogRecord( \
         caLogCoreSink, caLogCore, CA_LOG_LEV_ERR, __VA_ARGS__)
-#define CA_CORE_FATAL(...) CA_LOG_LOG_( \
+#define caCoreFatal(...) caLogRecord( \
         caLogCoreSink, caLogCore, CA_LOG_LEV_FATAL, __VA_ARGS__)
 
-#define CA_VERBOSE(...) CA_LOG_LOG_( \
+#define caVerbose(...) caLogRecord( \
         caLogAppSink, caLogApp, CA_LOG_LEV_VERBOSE, __VA_ARGS__)
-#define CA_DEBUG(...) CA_LOG_LOG_( \
+#define caDebug(...) caLogRecord( \
         caLogAppSink, caLogApp, CA_LOG_LEV_DEBUG, __VA_ARGS__)
-#define CA_INFO(...) CA_LOG_LOG_( \
+#define caInfo(...) caLogRecord( \
         caLogAppSink, caLogApp, CA_LOG_LEV_INFO, __VA_ARGS__)
-#define CA_WARN(...) CA_LOG_LOG_( \
+#define caWarn(...) caLogRecord( \
         caLogAppSink, caLogApp, CA_LOG_LEV_WARN, __VA_ARGS__)
-#define CA_ERR(...) CA_LOG_LOG_( \
+#define caErr(...) caLogRecord( \
         caLogAppSink, caLogApp, CA_LOG_LEV_ERR, __VA_ARGS__)
-#define CA_FATAL(...) CA_LOG_LOG_( \
+#define caFatal(...) caLogRecord( \
         caLogAppSink, caLogApp, CA_LOG_LEV_FATAL, __VA_ARGS__)
 
 #endif

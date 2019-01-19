@@ -1,15 +1,18 @@
 #include "Log.h"
 
-CaLogRecord_t caLogRecord(CaLogLevel_t level, size_t line,
+struct CaLogRecord caCreateLogRecord(
+        enum CaLogLevel level, size_t line,
         char const * func, char const * file)
 {
-    struct timespec tsp;
-    clock_gettime(CLOCK_MONOTONIC, &tsp);
-    return (CaLogRecord_t){NULL, level, *localtime(&tsp.tv_sec), tsp.tv_nsec,
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (struct CaLogRecord){
+        NULL, level, *localtime(&tv.tv_sec), tv.tv_usec,
         syscall(__NR_gettid), getpid(), line, func, file};
 }
-void caLogLog(FILE *f, CaLogLogger_t const log, CaLogRecord_t rec,
-                char const *fmt, ...)
+void caLogLog(
+        FILE *f, struct CaLogLogger const log,
+        struct CaLogRecord rec, char const *fmt, ...)
 {
     rec.log_name = log.name;
     if (log.level > rec.level)
@@ -20,7 +23,8 @@ void caLogLog(FILE *f, CaLogLogger_t const log, CaLogRecord_t rec,
     log.print(f, rec, fmt, args);
     va_end (args);
 }
-void caLogFuncDefault(FILE *f, CaLogRecord_t const rec, char const *fmt, ...)
+void caLogFuncDefault(
+        FILE *f, struct CaLogRecord const rec, char const *fmt, va_list args)
 {
     const char *color;
     switch (rec.level)
@@ -33,32 +37,29 @@ void caLogFuncDefault(FILE *f, CaLogRecord_t const rec, char const *fmt, ...)
     case CA_LOG_LEV_FATAL:   color = "\033[1m\033[41m"; break;
     case CA_LOG_LEV_OFF:     color = "\033[0;0m"; break;
     }
-    fprintf(f, "%s[%02d:%02d:%02d.%u] %s: ",
+    fprintf(f, "%s[%02d:%02d:%02d.%llu] %s: ",
             color,
             rec.t.tm_hour,
             rec.t.tm_min,
             rec.t.tm_sec,
-            rec.nsec / 1000000,
+            rec.usec,
             rec.log_name
             );
-    va_list args;
-    va_start (args, fmt);
     vfprintf(f, fmt, args);
-    va_end (args);
     fputs("\n\033[0;0m", f);
     fflush(f);
 }
 
-CaLogLogger_t caLogCore;
+struct CaLogLogger caLogCore;
 FILE *caLogCoreSink;
 
-CaLogLogger_t caLogApp;
+struct CaLogLogger caLogApp;
 FILE *caLogAppSink;
 
 void caLogInit(void)
 {
-    caLogCore = (CaLogLogger_t){"CALDERA",CA_LOG_LEV_VERBOSE,caLogFuncDefault};
-    caLogApp = (CaLogLogger_t){"APP",CA_LOG_LEV_VERBOSE,caLogFuncDefault};
+    caLogCore = (struct CaLogLogger){"CALDERA",CA_LOG_LEV_VERBOSE,caLogFuncDefault};
+    caLogApp = (struct CaLogLogger){"APP",CA_LOG_LEV_VERBOSE,caLogFuncDefault};
     caLogCoreSink = stderr;
     caLogAppSink = stderr;
 }

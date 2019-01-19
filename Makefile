@@ -14,7 +14,7 @@ options:
 	@echo "CC      = $(CC)"
 
 run:
-	make -s clean all exec #&& ./a.out $(ARGS)
+	make -s clean all exec
 
 exec:
 	export LD_LIBRARY_PATH=build/Caldera/:$LD_LIBRARY_PATH; \
@@ -28,7 +28,7 @@ all:
 build/Caldera:
 	mkdir build/Caldera
 	cd Caldera/; \
-	$(CC) $(STCFLAGS) -fPIC -c `find . -name '*.c'` -I .; \
+	$(CC) $(STCFLAGS) -fPIC -c `find . -name '*.c'` -I./; \
 	cd -; \
 	mv `find Caldera/ -name '*.o'` build/Caldera/; \
 	$(CC) $(STCFLAGS) -shared -o build/Caldera/libCaldera.so \
