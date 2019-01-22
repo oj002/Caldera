@@ -16,9 +16,17 @@ options:
 run:
 	make -s clean all exec
 
+debug:
+	make -s clean all gdb
+
 exec:
 	export LD_LIBRARY_PATH=build/Caldera/:$LD_LIBRARY_PATH; \
 	./a.out $(ARGS) \
+	export LD_LIBRARY_PATH=$$OLD_LLP;
+
+gdb:
+	export LD_LIBRARY_PATH=build/Caldera/:$LD_LIBRARY_PATH; \
+	gdb ./a.out $(ARGS) \
 	export LD_LIBRARY_PATH=$$OLD_LLP;
 
 
@@ -28,15 +36,15 @@ all:
 build/Caldera:
 	mkdir build/Caldera
 	cd Caldera/; \
-	$(CC) $(STCFLAGS) -fPIC -c `find . -name '*.c'` -I./; \
+	$(CC) $(STLDFLAGS) -fPIC -c `find . -name '*.c'` -I./; \
 	cd -; \
 	mv `find Caldera/ -name '*.o'` build/Caldera/; \
-	$(CC) $(STCFLAGS) -shared -o build/Caldera/libCaldera.so \
+	$(CC) $(STLDFLAGS) -shared -o build/Caldera/libCaldera.so \
 		`find ./build/Caldera/ -name '*.o'`;
 
 build/Sandbox:
 	mkdir build/Sandbox/
-	$(CC) $(STCFLAGS) -Lbuild/Caldera -I Caldera/ \
+	$(CC) $(STLDFLAGS) -Lbuild/Caldera -I Caldera/ \
 		`find Sandbox -name '*.c'` -lCaldera;
 
 clean:
@@ -44,4 +52,4 @@ clean:
 	rm -rf build/Sandbox/
 	rm -f a.out
 
-.PHONY: options run exec all install clean #uninstall
+.PHONY: options run exec all install clean debug gdb #uninstall

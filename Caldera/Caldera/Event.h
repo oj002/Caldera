@@ -31,8 +31,7 @@ enum CaEventCategory
 struct CaEvent
 {
     enum CaEventType type;
-    enum CaEventCategory category;
-    int handled;
+    int isHandled;
     union
     {
         struct { unsigned int wndWidth, wndHeight; };/* WindowResize */

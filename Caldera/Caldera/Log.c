@@ -1,5 +1,19 @@
 #include "Log.h"
 
+struct CaLogLogger caLogCore;
+FILE *caLogCoreSink;
+
+struct CaLogLogger caLogApp;
+FILE *caLogAppSink;
+
+void caInitLogging(void)
+{
+    caLogCore = (struct CaLogLogger){"CALDERA",CA_LOG_LEV_VERBOSE,caLogFuncDefault};
+    caLogApp = (struct CaLogLogger){"APP",CA_LOG_LEV_VERBOSE,caLogFuncDefault};
+    caLogCoreSink = stderr;
+    caLogAppSink = stderr;
+}
+
 struct CaLogRecord caCreateLogRecord(
         enum CaLogLevel level, size_t line,
         char const * func, char const * file)
@@ -50,16 +64,3 @@ void caLogFuncDefault(
     fflush(f);
 }
 
-struct CaLogLogger caLogCore;
-FILE *caLogCoreSink;
-
-struct CaLogLogger caLogApp;
-FILE *caLogAppSink;
-
-void caLogInit(void)
-{
-    caLogCore = (struct CaLogLogger){"CALDERA",CA_LOG_LEV_VERBOSE,caLogFuncDefault};
-    caLogApp = (struct CaLogLogger){"APP",CA_LOG_LEV_VERBOSE,caLogFuncDefault};
-    caLogCoreSink = stderr;
-    caLogAppSink = stderr;
-}

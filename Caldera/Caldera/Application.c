@@ -7,7 +7,7 @@ void caRunApplication(void)
 {
     struct CaEvent e;
     e.type = CA_EVENT_WND_RESIZE;
-    e.handled = 0;
+    e.isHandled = 0;
     e.wndWidth = 1280;
     e.wndHeight = 720;
     switch (e.type)

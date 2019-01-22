@@ -39,10 +39,17 @@ struct CaLogLogger
 {
     char const *name;
     enum CaLogLevel level;
-    void (*print)(
-            FILE *f, struct CaLogRecord const rec,
-            char const *fmt, va_list args);
+    void (*print)(FILE *, struct CaLogRecord const, char const *, va_list);
 };
+
+extern struct CaLogLogger caLogCore;
+extern FILE *caLogCoreSink;
+
+extern struct CaLogLogger caLogApp;
+extern FILE *caLogAppSink;
+
+void caInitLogging(void);
+
 
 struct CaLogRecord caCreateLogRecord(
         enum CaLogLevel level, size_t line,
@@ -55,13 +62,6 @@ void caLogLog(
 void caLogFuncDefault(
         FILE *f, struct CaLogRecord const rec, char const *fmt, va_list args);
 
-void caLogInit(void);
-
-extern struct CaLogLogger caLogCore;
-extern FILE *caLogCoreSink;
-
-extern struct CaLogLogger caLogApp;
-extern FILE *caLogAppSink;
 
 #define caLogRecord(f, log, level, ...) \
     caLogLog(f, log,\

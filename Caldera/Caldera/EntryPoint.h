@@ -10,12 +10,13 @@ int main(int argc, char** argv)
     (void)argc;
     (void)argv;
 
-    caLogInit();
+    caInitLogging();
     caCoreVerbose("Starting up");
+    caInitWindowing();
     caInitApplication();
 
     caRunApplication();
-
+    caShutdownWindowing();
     caCoreVerbose("Shuting down");
     caShutdownApplication();
     return EXIT_SUCCESS;

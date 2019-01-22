@@ -3,6 +3,7 @@
 
 #include "Core.h"
 #include "Event.h"
+#include "Window.h"
 
 
 extern void caInitApplication(void);
